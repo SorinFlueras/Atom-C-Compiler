@@ -70,7 +70,7 @@ public class LexicalAnalyzer {
         return s.substring(i, j);
     }
 	
-	public void addToken(String code, String attribute, int line) {
+	public void addToken(String code, Object attribute, int line) {
 		Token tk = new Token(code,attribute,line);
 		tokens.add(tk);
 	}
@@ -90,7 +90,7 @@ public class LexicalAnalyzer {
 					case 0: 
 						content = "";
 						if(entry.getValue().charAt(i) == ' ' || entry.getValue().charAt(i) == '\n' || entry.getValue().charAt(i) == '\r' || entry.getValue().charAt(i) == '\t') {
-							addToken("SPACE","-",entry.getKey());
+							//addToken("SPACE","-",entry.getKey());
 							break;
 						}
 						if(Character.isLetter(entry.getValue().charAt(i)) || entry.getValue().charAt(i) == '_') {
@@ -109,12 +109,12 @@ public class LexicalAnalyzer {
 							break;
 						}
 						if(entry.getValue().charAt(i) == '\'') {
-							content += entry.getValue().charAt(i);
+							//content += entry.getValue().charAt(i); PENTRU CHAR FARA '
 							state = 20;
 							break;
 						}
 						if(entry.getValue().charAt(i) == '"') {
-							content += entry.getValue().charAt(i);
+							//content += entry.getValue().charAt(i); // PENTRU STRING FARA ""
 							state = 16;
 							break;
 						}
@@ -295,7 +295,7 @@ public class LexicalAnalyzer {
 							break;
 						}
 					case 9: 
-						addToken("CT_REAL", content, entry.getKey());
+						addToken("CT_REAL", Double.parseDouble(content), entry.getKey());
 						state = 0;
 						i--;
 						break;
@@ -368,18 +368,90 @@ public class LexicalAnalyzer {
 							break;
 						}
 					case 15: 
-						addToken("CT_INT",content,entry.getKey());
+						addToken("CT_INT",Integer.decode(content),entry.getKey());
 						state = 0;
 						i--;
 						break;
-					case 16: break;
-					case 17: break;
-					case 18: break;
-					case 19: break;
-					case 20: break;
-					case 21: break;
-					case 22: break;
-					case 23: break;
+					case 16: 
+						if(entry.getValue().charAt(i) == '\\') {
+							content += entry.getValue().charAt(i);
+							state = 17;
+							break;
+						}
+						else if(entry.getValue().charAt(i) == '"') {
+							content += entry.getValue().charAt(i);
+							state = 19;
+							break;
+						}
+						else {
+							content += entry.getValue().charAt(i);
+							state = 18;
+							break;
+						}
+					case 17: 
+						if(entry.getValue().charAt(i) == 'a' || entry.getValue().charAt(i) == 'b' || entry.getValue().charAt(i) == 'f' || entry.getValue().charAt(i) == 'n' || entry.getValue().charAt(i) == 'r' || entry.getValue().charAt(i) == 't' || entry.getValue().charAt(i) == 'v' || entry.getValue().charAt(i) == '\'' || entry.getValue().charAt(i) == '?' || entry.getValue().charAt(i) == '\"'|| entry.getValue().charAt(i) == '\\' || entry.getValue().charAt(i) == '0') {
+							content += entry.getValue().charAt(i);
+							state = 18;
+							break;
+						}
+					case 18: 
+						if(entry.getValue().charAt(i) == '\"') {
+							//content += entry.getValue().charAt(i); // PENTRU STRING FARA ""
+							state = 19;
+							break;
+						}
+						else if(entry.getValue().charAt(i) == '\\') {
+							//content += entry.getValue().charAt(i); // PENTRU STRING FARA ""
+							state = 16;
+							i--;
+							break;
+						}
+						else {
+							content += entry.getValue().charAt(i);
+							state = 16;
+							break;
+						}
+					case 19: addToken("CT_STRING",content,entry.getKey()); state = 0; i--; break;
+					case 20: 
+						if(entry.getValue().charAt(i) == '\\') {
+							content += entry.getValue().charAt(i);
+							state = 21;
+							break;
+						}
+						else {
+							content += entry.getValue().charAt(i);
+							state = 22;
+							break;
+						}
+					case 21: 
+						if(entry.getValue().charAt(i) == 'a' || entry.getValue().charAt(i) == 'b' || entry.getValue().charAt(i) == 'f' || entry.getValue().charAt(i) == 'n' || entry.getValue().charAt(i) == 'r' || entry.getValue().charAt(i) == 't' || entry.getValue().charAt(i) == 'v' || entry.getValue().charAt(i) == '\'' || entry.getValue().charAt(i) == '?' || entry.getValue().charAt(i) == '"'|| entry.getValue().charAt(i) == '\\' || entry.getValue().charAt(i) == '\0') {
+							content += entry.getValue().charAt(i);
+							state = 22;
+							break;
+						}
+					case 22: 
+						if(entry.getValue().charAt(i) == '\'') {
+							//content += entry.getValue().charAt(i);
+							state = 23;
+							break;
+						}
+					case 23: 
+						switch(content) {
+							case "\\a": addToken("CT_CHAR", new Character('a'), entry.getKey());state = 0; i--; break;
+							case "\\b": addToken("CT_CHAR", new Character('\b'), entry.getKey());state = 0; i--; break;
+							case "\\f": addToken("CT_CHAR", new Character('\f'), entry.getKey());state = 0; i--; break;
+							case "\\n": addToken("CT_CHAR", new Character('\n'), entry.getKey());state = 0; i--; break;
+							case "\\r": addToken("CT_CHAR", new Character('\r'), entry.getKey());state = 0; i--; break;
+							case "\\t": addToken("CT_CHAR", new Character('\t'), entry.getKey());state = 0; i--; break;
+							case "\\v": addToken("CT_CHAR", new Character('v'), entry.getKey());state = 0; i--; break;
+							case "\\'": addToken("CT_CHAR", new Character('\''), entry.getKey());state = 0; i--; break;
+							case "\\?": addToken("CT_CHAR", new Character('?'), entry.getKey());state = 0; i--; break;
+							case "\\\"": addToken("CT_CHAR", new Character('\"'), entry.getKey());state = 0; i--; break;
+							case "\\": addToken("CT_CHAR", new Character('\\'), entry.getKey());state = 0; i--; break;
+							case "\\0": addToken("CT_CHAR", new Character('\0'), entry.getKey());state = 0; i--; break;
+							default: addToken("CT_CHAR", new Character(content.charAt(0)), entry.getKey());state = 0; i--; break;
+						}
+						break;
 					case 24: addToken("COMMA","-",entry.getKey()); state = 0; i--; break;
 					case 25: addToken("SEMICOLON","-",entry.getKey()); state = 0; i--; break;
 					case 26: addToken("LPAR","-",entry.getKey()); state = 0; i--; break;
@@ -404,14 +476,11 @@ public class LexicalAnalyzer {
 						}
 						else {
 							state = 36;
+							i--;
 							break;
 						}
 						
-					case 36: 
-						addToken("DIV","-",entry.getKey());
-						i--;
-						state = 0;
-						break;
+					case 36: addToken("DIV","-",entry.getKey());	i--; state = 0; break;
 					case 37: addToken("DOT","-",entry.getKey()); state = 0; i--; break;
 					case 38: 
 						if(entry.getValue().charAt(i) == '&') {
@@ -446,6 +515,7 @@ public class LexicalAnalyzer {
 						}
 						else {
 							state = 45;
+							i--;
 							break;
 						}
 					case 45: addToken("ASSIGN","-",entry.getKey()); state = 0; i--; break;
@@ -459,6 +529,7 @@ public class LexicalAnalyzer {
 						}
 						else {
 							state = 49;
+							i--;
 							break;
 						}
 					case 49: addToken("LESS","-",entry.getKey()); state = 0; i--; break;
@@ -485,7 +556,7 @@ public class LexicalAnalyzer {
 							break;
 						}
 					case 55: 
-						addToken("LINECOMMENT", contentForComment, entry.getKey());
+						//addToken("LINECOMMENT", contentForComment, entry.getKey());
 						contentForComment = "";
 						state = 0;
 						break;
@@ -516,7 +587,7 @@ public class LexicalAnalyzer {
 						}
 					case 58:
 						i++;
-						addToken("COMMENT",contentForComment, entry.getKey());
+						//addToken("COMMENT",contentForComment, entry.getKey());
 						contentForComment = "";
 						state = 0;
 						break;
