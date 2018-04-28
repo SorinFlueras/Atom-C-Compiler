@@ -224,10 +224,79 @@ public class LexicalAnalyzer {
 							break;
 						}
 						//break;
-					case 2: addToken("ID", content, entry.getKey());
-						state = 0;
-						i = i-1;
-						break;
+					case 2: 
+						if(content.equals("break")) {
+							addToken("BREAK", "-", entry.getKey());
+							state = 0;
+							i = i-1;
+							break;
+						}
+						if(content.equals("char")) {
+							addToken("CHAR", "-", entry.getKey());
+							state = 0;
+							i = i-1;
+							break;
+						}
+						if(content.equals("double")) {
+							addToken("DOUBLE", "-", entry.getKey());
+							state = 0;
+							i = i-1;
+							break;
+						}
+						if(content.equals("else")) {
+							addToken("ELSE", "-", entry.getKey());
+							state = 0;
+							i = i-1;
+							break;
+						}
+						if(content.equals("for")) {
+							addToken("FOR", "-", entry.getKey());
+							state = 0;
+							i = i-1;
+							break;
+						}
+						if(content.equals("if")) {
+							addToken("IF", "-", entry.getKey());
+							state = 0;
+							i = i-1;
+							break;
+						}
+						if(content.equals("int")) {
+							addToken("INT", "-", entry.getKey());
+							state = 0;
+							i = i-1;
+							break;
+						}
+						if(content.equals("return")) {
+							addToken("RETURN", "-", entry.getKey());
+							state = 0;
+							i = i-1;
+							break;
+						}
+						if(content.equals("struct")) {
+							addToken("STRUCT", "-", entry.getKey());
+							state = 0;
+							i = i-1;
+							break;
+						}
+						if(content.equals("void")) {
+							addToken("VOID", "-", entry.getKey());
+							state = 0;
+							i = i-1;
+							break;
+						}
+						if(content.equals("while")) {
+							addToken("WHILE", "-", entry.getKey());
+							state = 0;
+							i = i-1;
+							break;
+						}
+						else {
+							addToken("ID", content, entry.getKey());
+							state = 0;
+							i = i-1;
+							break;
+						}
 					case 3: 
 						if(Character.isDigit(entry.getValue().charAt(i))) {
 							content += entry.getValue().charAt(i);
@@ -411,7 +480,15 @@ public class LexicalAnalyzer {
 							state = 16;
 							break;
 						}
-					case 19: addToken("CT_STRING",content,entry.getKey()); state = 0; i--; break;
+					case 19: 
+						content = content.replace("\\t","\t");
+						content = content.replace("\\n","\n");
+						content = content.replace("\\b","\b");
+						content = content.replace("\\r","\r");
+						content = content.replace("\\f","\f");
+						content = content.replace("\\\"","\"");
+						content = content.replace("\\\\","\\");
+						addToken("CT_STRING",content,entry.getKey()); state = 0; i--; break;
 					case 20: 
 						if(entry.getValue().charAt(i) == '\\') {
 							content += entry.getValue().charAt(i);
