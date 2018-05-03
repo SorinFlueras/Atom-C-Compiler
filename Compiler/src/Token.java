@@ -10,7 +10,19 @@ public class Token {
     		this.line = line;
     }
     
-    public String toString() {
+    
+    
+    public String getCode() {
+		return code;
+    }
+    
+	public void setCode(String code) {
+		this.code = code;
+	}
+
+
+
+	public String toString() {
     		return this.code + ":" + this.attribute + " " + this.line;
     }
 }
