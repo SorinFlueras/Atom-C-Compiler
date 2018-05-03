@@ -58,7 +58,69 @@ public class SyntacticAnalyzer {
 		return false;
 	}
 	
+	public void err(int tokenLine, String message) {
+		System.err.println(message + " at line " + tokenLine);
+		System.exit(1);
+	}
+	
+	public boolean ruleExprRel() {
+		return false;
+	}
+	
+	public boolean ruleExprEq1() {
+		Token startToken = currentToken;
+		System.out.println("rule: exprEq1 | starting token: " + startToken);
+		if(consumeToken("EQUAL") || consumeToken("NOTEQ")) {
+			if(ruleExprRel()) {
+				if(ruleExprEq1()) {
+					return true;
+				}
+			}
+			else {
+				err(currentToken.getLine(), "missing = or !=");
+			}
+		}
+		//currentToken = startToken;
+		return true;
+	}
+	
+	public boolean ruleExprEq() {
+		Token startToken = currentToken;
+		System.out.println("rule: exprEq | starting token: " + startToken);
+		if(ruleExprRel()) {
+			if(ruleExprEq1()) {
+				return true;
+			}
+		}
+		currentToken = startToken;
+		return false;
+	}
+	
+	public boolean ruleExprAnd1() {
+		Token startToken = currentToken;
+		System.out.println("rule: exprAnd1 | starting token: " + startToken);
+		if(consumeToken("AND")) {
+			if(ruleExprEq()) {
+				if(ruleExprAnd1()) {
+					return true;
+				}
+			} 
+			else {
+				err(currentToken.getLine(), "missing &&");
+			}
+		}
+		return true;
+	}
+	
 	public boolean ruleExprAnd() {
+		Token startToken = currentToken;
+		System.out.println("rule: exprAnd | starting token: " + startToken);
+		if(ruleExprEq()) {
+			if(ruleExprAnd1()) {
+				return true;
+			}
+		}
+		currentToken = startToken;
 		return false;
 	}
 	
@@ -70,6 +132,9 @@ public class SyntacticAnalyzer {
 				if(ruleExprOr1()) {
 					return true;
 				}
+			}
+			else {
+				err(currentToken.getLine(), "missing ||");
 			}
 		}
 		//currentToken = startToken;
@@ -88,7 +153,66 @@ public class SyntacticAnalyzer {
 		return false;
 	}
 	
+	public boolean ruleExprPrimary() {
+		return false;
+	}
+	
+	/*
+	 * exprPostfix: exprPostfix LBRACKET expr RBRACKET
+           | exprPostfix DOT ID 
+           | exprPrimary ;
+           
+       exprPostfix: exprPrimary exprPostfix1
+       exprPostfix1: LBRACKET expr RBRACKET exprPostfix1
+       	   | DOT ID exprPostfix1
+       	   | eps
+  * */
+	
+	public boolean ruleExprPostfix1() {
+		if(consumeToken("LBRACKET")) {
+			if(ruleExpr()) {
+				if(consumeToken("RBRACKET")) {
+					if(ruleExprPostfix1()) {
+						return true;
+					}
+				} else {
+					err(currentToken.getLine(), "missing [");
+				}
+			}
+		}
+		else {
+			err(currentToken.getLine(), "missing ]");
+		}
+		return true;
+	}
+	
+	public boolean ruleExprPostfix() {
+		Token startToken = currentToken;
+		System.out.println("rule: exprUnary | starting token: " + startToken);
+		if(ruleExprPrimary()) {
+			if(ruleExprPostfix1()) {
+				return true;
+			}
+		}
+		currentToken = startToken;
+		return false;
+	}
+	
 	public boolean ruleExprUnary() {
+		Token startToken = currentToken;
+		System.out.println("rule: exprUnary | starting token: " + startToken);
+		if(consumeToken("SUB") || consumeToken("NOT")) {
+			if(ruleExprUnary()) {
+				return true;
+			}
+		}
+		else if (ruleExprPostfix()) {
+			return true;
+		}
+		else {
+			err(currentToken.getLine(), "missing - or !");
+		}
+		currentToken = startToken;
 		return false;
 	}
 	
@@ -103,18 +227,19 @@ public class SyntacticAnalyzer {
 				}
 				else {
 					System.err.println(currentToken + " exprAssign error");
+					
 				}
 			}
-			System.err.println(currentToken + " missing =");
 		}
 		//SAU exprOr
-		else if(ruleExprOr()) {
+		currentToken = startToken;
+		if(ruleExprOr()) {
 			return true;
 		}
 		else {
 			System.err.println(currentToken + " exprOr or exprUnary error");
 		}
-		currentToken = startToken;
+		
 		return false;
 	}
 	

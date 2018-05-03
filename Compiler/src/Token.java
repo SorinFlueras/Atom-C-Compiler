@@ -4,7 +4,17 @@ public class Token {
     private Object attribute;
     int line;
     
-    public Token(String code, Object attribute, int line) {
+    public int getLine() {
+		return line;
+	}
+
+	public void setLine(int line) {
+		this.line = line;
+	}
+
+
+
+	public Token(String code, Object attribute, int line) {
     		this.code = code;
     		this.attribute = attribute;
     		this.line = line;
