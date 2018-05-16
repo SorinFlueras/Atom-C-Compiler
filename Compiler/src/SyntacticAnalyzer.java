@@ -419,82 +419,33 @@ public class SyntacticAnalyzer {
 		return false;
 	}
 	
-	// 0 or more implementation
 	public boolean ruleDeclVar() {
 		Token startToken = currentToken;
 		System.out.println("rule: declVar | starting token: " + startToken);
 		if(ruleTypeBase()) {
 			if(consumeToken("ID")) {
 				if(ruleArrayDecl()) {
+					
+				}
+				for(;;) {
 					if(consumeToken("COMMA")) {
 						if(consumeToken("ID")) {
 							if(ruleArrayDecl()) {
-								if(consumeToken("SEMICOLON")) {
-									return true;
-								}
-								else {
-									err(currentToken.getLine(), "missing ;");
-								}
-							}
-							else {
-								if(consumeToken("SEMICOLON")) {
-									return true;
-								}
-								else {
-									err(currentToken.getLine(), "missing ;");
-								}
-							}
-						}
-						else {
-							err(currentToken.getLine(), "missing ID");
-						}
-					}else {
-						if(consumeToken("SEMICOLON")) {
-							return true;
-						}
-						else {
-							err(currentToken.getLine(), "missing , or ;");
-						}
-					}
-				}
-				else if(consumeToken("COMMA")) {
-					if(consumeToken("ID")) {
-						if(ruleArrayDecl()) {
-							if(consumeToken("SEMICOLON")) {
-								return true;
-							}
-							else {
-								err(currentToken.getLine(), "missing ;");
-							}
-						}
-						else {
-							if(consumeToken("SEMICOLON")) {
-								return true;
-							}
-							else {
-								err(currentToken.getLine(), "missing ;");
-							}
+							
+							}		
 						}
 					}
 					else {
-						err(currentToken.getLine(), "missing ID");
+						break;
 					}
+				}
+				if(consumeToken("SEMICOLON")) {
+					return true;
 				}
 				else {
-					if(consumeToken("SEMICOLON")) {
-						return true;
-					}
-					else {
-						err(currentToken.getLine(), "missing , or ;");
-					}
+					err(currentToken.getLine(), "missing ; or ,");
 				}
 			}
-			else {
-				err(currentToken.getLine(), "missing ID");
-			}
-		}
-		else {
-			err(currentToken.getLine(), "missing type");
 		}
 		currentToken = startToken;
 		return false;
@@ -507,48 +458,137 @@ public class SyntacticAnalyzer {
 		if(consumeToken("STRUCT")) {
 			if(consumeToken("ID")) {
 				if(consumeToken("LACC")) {
-					if(ruleDeclVar()) {
-						if(consumeToken("RACC")){
-							if(consumeToken("SEMICOLON")) {
-								return true;
-							}
-							else {
-								err(currentToken.getLine(), "missing ;");
-							}
+					for(;;) {
+					if(ruleDeclVar()) {}
+					else break;
+					}
+					if(consumeToken("RACC")){
+						if(consumeToken("SEMICOLON")) {
+							return true;
 						}
 						else {
-							err(currentToken.getLine(), "missing }");
+							err(currentToken.getLine(), "missing ;");
 						}
 					}
 					else {
-						if(consumeToken("RACC")){
-							if(consumeToken("SEMICOLON")) {
-								return true;
-							}
-							else {
-								err(currentToken.getLine(), "missing ;");
-							}
-						}
-						else {
-							err(currentToken.getLine(), "missing }");
-						}
+						err(currentToken.getLine(), "missing }");
 					}
 				}
-				else {
-					err(currentToken.getLine(), "missing {");
-				}
-			}
-			else {
-				err(currentToken.getLine(), "missing ID");
 			}
 		}
 		else {
-			err(currentToken.getLine(), "missing struct");
+			err(currentToken.getLine(), "missing ID");
 		}
 		currentToken = startToken;
 		return false;
 	}
 	
+	public boolean ruleFuncArg() {
+		return false;
+	}
 	
+	public boolean ruleStmCompound() {
+		return false;
+	}
 	
+	public boolean ruleDeclFunc() {
+		Token startToken = currentToken;
+		System.out.println("rule: declFunc | starting token: " + startToken);
+		if(ruleTypeBase()) {
+			if(consumeToken("MUL")) {
+				
+			}
+		}
+		else if(consumeToken("VOID")) {
+			
+		}
+		else {
+			currentToken = startToken;
+			return false;
+		}
+		if(consumeToken("ID")) {
+			if(consumeToken("LPAR")) {
+				if(ruleFuncArg()) {
+					for(;;) {
+						if(consumeToken("COMMA")) {
+							if(ruleFuncArg()) {
+								
+							}
+						}
+						else {
+							break;
+						}
+					}
+				}
+				if(consumeToken("RPAR")) {
+					if(ruleStmCompound()) {
+						return true;
+					}
+					else {
+						err(currentToken.getLine(), "missing function body");
+					}
+				}
+				else {
+					err(currentToken.getLine(), "missing )");
+				}
+			}
+		}
+		currentToken = startToken;
+		return false;
+	}
+	
+	public boolean exprPrimary() {
+		Token startToken = currentToken;
+		System.out.println("rule: exprPrimary | starting token: " + startToken);
+		if(consumeToken("ID")) {
+			if(consumeToken("LPAR")) {
+				if(ruleExpr()) {
+					for(;;) {
+						if(consumeToken("COMMA")) {
+							if(ruleExpr()) {
+								
+							}
+						}
+						else {
+							break;
+						}
+					}
+				}
+				if(consumeToken("RPAR")) {
+					
+				}
+			}
+			if(consumeToken("CT_INT") || consumeToken("CT_REAL") || consumeToken("CT_CHAR") || consumeToken("CT_STRING")) {
+				return true;
+			}
+			if(consumeToken("LPAR")) {
+				if(ruleExpr()) {
+					if(consumeToken("RPAR")) {
+						return true;
+					}
+				}
+			}
+		}
+		currentToken = startToken;
+		return false;
+	}
+	
+	public boolean ruleUnit() {
+		Token startToken = currentToken;
+		System.out.println("rule: unit | starting token: " + startToken);
+		for(;;) {
+			if(ruleDeclStruct() || ruleDeclFunc() || ruleDeclVar()) {
+				
+			}
+			else {
+				break;
+			}
+		}
+		if(consumeToken("END")) {
+			return true;
+		}
+		currentToken = startToken;
+		return false;
+	}
+
 }
