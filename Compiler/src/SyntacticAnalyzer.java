@@ -281,7 +281,7 @@ public class SyntacticAnalyzer {
 						return true;
 					}
 				} else {
-					err(currentToken.getLine(), "missing [");
+					err(currentToken.getLine(), "missing ["); //corect bracket here
 				}
 			}
 		}
