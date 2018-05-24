@@ -7,11 +7,12 @@ public class SyntacticAnalyzer {
 	
 	public SyntacticAnalyzer(ArrayList<Token> tokens) {
 		this.tokens = tokens;
+		currentToken = tokens.get(0);
 	}
 	
 	public boolean consumeToken(String TokenCode) {
 		//display the given token code in contrast with the found one
-		System.out.println("Given code: " + TokenCode + " | Found code: " + tokens.get(tokensIndex).getCode());
+		System.out.println("Given code: " + TokenCode + " | Found code: " + tokens.get(tokensIndex) + "|" + tokensIndex);
 		//if the code that we look for is equal to the one that we provided
 		if(tokens.get(tokensIndex).getCode().equals(TokenCode)) {
 			//copy it
@@ -25,17 +26,14 @@ public class SyntacticAnalyzer {
 		return false;
 	}
 	
-	public boolean stm() {
-		return true;
-	}
-	
 	public boolean ruleWhile() {
 		Token startToken = currentToken;
+		int startIndex = tokensIndex;
 		if(consumeToken("WHILE")) {
 			if(consumeToken("LPAR")) {
 				if(ruleExpr()) {
 					if(consumeToken("RPAR")) {
-						if(stm()) {
+						if(ruleStm()) {
 							return true;
 						}
 						else {
@@ -54,6 +52,7 @@ public class SyntacticAnalyzer {
 				err(currentToken.getLine(), " missing ( after while");
 			}
 		}
+		tokensIndex = startIndex;
 		currentToken = startToken;
 		return false;
 	}
@@ -65,7 +64,8 @@ public class SyntacticAnalyzer {
 	
 	public boolean ruleExprCast() {
 		Token startToken = currentToken;
-		System.out.println("rule: exprMull1 | starting token: " + startToken);
+		int startIndex = tokensIndex;
+		System.out.println("rule: exprCast | starting token: " + startToken);
 		if(consumeToken("LPAR")) {
 			if(ruleTypeName()) {
 				if(consumeToken("RPAR")) {
@@ -81,15 +81,14 @@ public class SyntacticAnalyzer {
 		else if(ruleExprUnary()) {
 			return true;
 		}
-		else {
-			err(currentToken.getLine(), "missing (");
-		}
 		currentToken = startToken;
+		tokensIndex = startIndex;
 		return false;
 	}	
 	
 	public boolean ruleExprMul1() {
 		Token startToken = currentToken;
+		//int startIndex = tokensIndex;
 		System.out.println("rule: exprMull1 | starting token: " + startToken);
 		if(consumeToken("MUL") || consumeToken("DIV")) {
 			if(ruleExprCast()) {
@@ -98,14 +97,12 @@ public class SyntacticAnalyzer {
 				}
 			}
 		}
-		else {
-			err(currentToken.getLine(), "missing * or /");
-		}
 		return true;
 	}
 	
 	public boolean ruleExprMul() {
 		Token startToken = currentToken;
+		int startIndex = tokensIndex;
 		System.out.println("rule: exprMull | starting token: " + startToken);
 		if(ruleExprCast()) {
 			if(ruleExprMul1()) {
@@ -113,12 +110,14 @@ public class SyntacticAnalyzer {
 			}
 		}
 		currentToken = startToken;
+		tokensIndex = startIndex;
 		return false;
 	}
 	
 	public boolean ruleExprAdd1() {
 		Token startToken = currentToken;
-		System.out.println("rule: exprRel1 | starting token: " + startToken);
+		//int startIndex = tokensIndex;
+		System.out.println("rule: exprAdd1 | starting token: " + startToken);
 		if(consumeToken("ADD") || consumeToken("SUB")) {
 			if(ruleExprMul()) {
 				if(ruleExprAdd1()) {
@@ -126,14 +125,12 @@ public class SyntacticAnalyzer {
 				}
 			}
 		}
-		else {
-			err(currentToken.getLine(), "missing + or -");
-		}
 		return true;
 	}
 	
 	public boolean ruleExprAdd() {
 		Token startToken = currentToken;
+		int startIndex = tokensIndex;
 		System.out.println("rule: exprAdd | starting token: " + startToken);
 		if(ruleExprMul()) {
 			if(ruleExprAdd1()) {
@@ -141,11 +138,13 @@ public class SyntacticAnalyzer {
 			}
 		}
 		currentToken = startToken;
+		tokensIndex = startIndex;
 		return false;
 	}
 	
 	public boolean ruleExprRel1() {
 		Token startToken = currentToken;
+		//int startIndex = tokensIndex;
 		System.out.println("rule: exprRel1 | starting token: " + startToken);
 		if(consumeToken("LESS") || consumeToken("LESSEQ") || consumeToken("GREATER") || consumeToken("GREATEREQ")) {
 			if(ruleExprAdd()) {
@@ -154,14 +153,12 @@ public class SyntacticAnalyzer {
 				}
 			}
 		}
-		else {
-			err(currentToken.getLine(), "missing < or <= or > or >=");
-		}
 		return true;
 	}
 	
 	public boolean ruleExprRel() {
 		Token startToken = currentToken;
+		int startIndex = tokensIndex;
 		System.out.println("rule: exprRel | starting token: " + startToken);
 		if(ruleExprAdd()) {
 			if(ruleExprRel1()) {
@@ -169,11 +166,13 @@ public class SyntacticAnalyzer {
 			}
 		}
 		currentToken = startToken;
+		tokensIndex = startIndex;
 		return false;
 	}
 	
 	public boolean ruleExprEq1() {
 		Token startToken = currentToken;
+		//int startIndex = tokensIndex;
 		System.out.println("rule: exprEq1 | starting token: " + startToken);
 		if(consumeToken("EQUAL") || consumeToken("NOTEQ")) {
 			if(ruleExprRel()) {
@@ -191,6 +190,7 @@ public class SyntacticAnalyzer {
 	
 	public boolean ruleExprEq() {
 		Token startToken = currentToken;
+		int startIndex = tokensIndex;
 		System.out.println("rule: exprEq | starting token: " + startToken);
 		if(ruleExprRel()) {
 			if(ruleExprEq1()) {
@@ -198,11 +198,13 @@ public class SyntacticAnalyzer {
 			}
 		}
 		currentToken = startToken;
+		tokensIndex = startIndex;
 		return false;
 	}
 	
 	public boolean ruleExprAnd1() {
 		Token startToken = currentToken;
+		//int startIndex = tokensIndex;
 		System.out.println("rule: exprAnd1 | starting token: " + startToken);
 		if(consumeToken("AND")) {
 			if(ruleExprEq()) {
@@ -219,6 +221,7 @@ public class SyntacticAnalyzer {
 	
 	public boolean ruleExprAnd() {
 		Token startToken = currentToken;
+		int startIndex = tokensIndex;
 		System.out.println("rule: exprAnd | starting token: " + startToken);
 		if(ruleExprEq()) {
 			if(ruleExprAnd1()) {
@@ -226,11 +229,13 @@ public class SyntacticAnalyzer {
 			}
 		}
 		currentToken = startToken;
+		tokensIndex = startIndex;
 		return false;
 	}
 	
 	public boolean ruleExprOr1() {
 		Token startToken = currentToken;
+		//int startIndex = tokensIndex;
 		System.out.println("rule: exprOr1 | starting token: " + startToken);
 		if(consumeToken("OR")) {
 			if(ruleExprAnd()) {
@@ -248,6 +253,7 @@ public class SyntacticAnalyzer {
 	
 	public boolean ruleExprOr() {
 		Token startToken = currentToken;
+		int startIndex = tokensIndex;
 		System.out.println("rule: exprOr | starting token: " + startToken);
 		if(ruleExprAnd()) {
 			if(ruleExprOr1()) {
@@ -255,10 +261,46 @@ public class SyntacticAnalyzer {
 			}
 		}
 		currentToken = startToken;
+		tokensIndex = startIndex;
 		return false;
 	}
 	
 	public boolean ruleExprPrimary() {
+		Token startToken = currentToken;
+		int startIndex = tokensIndex;
+		System.out.println("rule: exprPrimary | starting token: " + startToken);
+		if(consumeToken("ID")) {
+			if(consumeToken("LPAR")) {
+				if(ruleExpr()) {
+					for(;;) {
+						if(consumeToken("COMMA")) {
+							if(ruleExpr()) {
+								
+							}
+						}
+						else {
+							break;
+						}
+					}
+				}
+				if(consumeToken("RPAR")) {
+					return true;
+				}
+			}
+			return true;
+		}
+		else if(consumeToken("CT_INT") || consumeToken("CT_REAL") || consumeToken("CT_CHAR") || consumeToken("CT_STRING")) {
+			return true;
+		}
+		else if(consumeToken("LPAR")) {
+			if(ruleExpr()) {
+				if(consumeToken("RPAR")) {
+					return true;
+				}
+			}
+		}
+		currentToken = startToken;
+		tokensIndex = startIndex;
 		return false;
 	}
 	
@@ -274,37 +316,45 @@ public class SyntacticAnalyzer {
   * */
 	
 	public boolean ruleExprPostfix1() {
+		Token startToken = currentToken;
+		//int startIndex = tokensIndex;
+		System.out.println("rule: exprPostfix1 | starting token: " + startToken);
 		if(consumeToken("LBRACKET")) {
 			if(ruleExpr()) {
 				if(consumeToken("RBRACKET")) {
 					if(ruleExprPostfix1()) {
 						return true;
 					}
-				} else {
-					err(currentToken.getLine(), "missing ["); //corect bracket here
-				}
+				} 
 			}
 		}
-		else {
-			err(currentToken.getLine(), "missing ]");
+		else if(consumeToken("DOT")) {
+			if(consumeToken("ID")){
+				if(ruleExprPostfix1()) {
+					return true;
+				}
+			}
 		}
 		return true;
 	}
 	
 	public boolean ruleExprPostfix() {
 		Token startToken = currentToken;
-		System.out.println("rule: exprUnary | starting token: " + startToken);
+		int startIndex = tokensIndex;
+		System.out.println("rule: exprPostfix | starting token: " + startToken);
 		if(ruleExprPrimary()) {
 			if(ruleExprPostfix1()) {
 				return true;
 			}
 		}
 		currentToken = startToken;
+		tokensIndex = startIndex;
 		return false;
 	}
 	
 	public boolean ruleExprUnary() {
 		Token startToken = currentToken;
+		int startIndex = tokensIndex;
 		System.out.println("rule: exprUnary | starting token: " + startToken);
 		if(consumeToken("SUB") || consumeToken("NOT")) {
 			if(ruleExprUnary()) {
@@ -314,15 +364,17 @@ public class SyntacticAnalyzer {
 		else if (ruleExprPostfix()) {
 			return true;
 		}
-		else {
+		/*else {
 			err(currentToken.getLine(), "missing - or !");
-		}
+		}*/
 		currentToken = startToken;
+		tokensIndex = startIndex;
 		return false;
 	}
 	
 	public boolean ruleExprAssign() {
 		Token startToken = currentToken;
+		int startIndex = tokensIndex;
 		System.out.println("rule: exprAssign | starting token: " + startToken);
 		//exprUnary ASSIGN exprAssign
 		if(ruleExprUnary()) {
@@ -330,49 +382,38 @@ public class SyntacticAnalyzer {
 				if(ruleExprAssign()) {
 					return true;
 				}
-				else {
-					err(currentToken.getLine(), " exprAssign error");
-					
-				}
 			}
 		}
 		//SAU exprOr
 		currentToken = startToken;
+		tokensIndex = startIndex;
 		if(ruleExprOr()) {
 			return true;
 		}
-		else {
-			err(currentToken.getLine(), " exprOr or exprUnary error");
-		}
-		
 		return false;
 	}
 	
 	public boolean ruleExpr() {
 		Token startToken = currentToken;
+		int startIndex = tokensIndex;
 		System.out.println("rule: expr | starting token: " + startToken);
 		if(ruleExprAssign()) {
 			return true;
 		}
-		else {
-			err(currentToken.getLine(), "exprAssign error");
-		}
 		currentToken = startToken;
+		tokensIndex = startIndex;
 		return false;
 	}
 	
 	public boolean ruleArrayDecl() {
 		Token startToken = currentToken;
+		int startIndex = tokensIndex;
 		System.out.println("rule: arrayDecl | starting token: " + startToken);
 		if(consumeToken("LBRACKET")) {
 			if(ruleExpr()) {
 				if(consumeToken("RBRACKET")) {
 					return true;
 				}
-			}
-			// INTREBAREEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE!!!!!!!!!!!!!!!!!!!!!!!!!
-			else {
-				err(currentToken.getLine(), "invalid expression after [");
 			}
 			if(consumeToken("RBRACKET")) {
 				return true;
@@ -381,15 +422,14 @@ public class SyntacticAnalyzer {
 				err(currentToken.getLine(), " missing ]");
 			}
 		}
-		else {
-			err(currentToken.getLine(), " missing [");
-		}
 		currentToken = startToken;
+		tokensIndex = startIndex;
 		return false;
 	}
 	
 	public boolean ruleTypeName() {
 		Token startToken = currentToken;
+		int startIndex = tokensIndex;
 		System.out.println("rule: typeName | starting token: " + startToken);
 		if(ruleTypeBase()) {
 			if(ruleArrayDecl()) {
@@ -398,28 +438,66 @@ public class SyntacticAnalyzer {
 			return true;
 		}
 		currentToken = startToken;
+		tokensIndex = startIndex;
 		return false;
 	}
 	
 	public boolean ruleTypeBase() {
 		Token startToken = currentToken;
+		int startIndex = tokensIndex;
 		System.out.println("rule: typeBase | starting token: " + startToken);
-		if(consumeToken("INT") || consumeToken("DOUBLE") ||consumeToken("CHAR") || consumeToken("STRUCT")) {
+		if(consumeToken("INT") || consumeToken("DOUBLE") ||consumeToken("CHAR")) {
+			return true;
+		}
+		else if(consumeToken("STRUCT")) {
 			if(consumeToken("ID")) {
 				return true;
 			}
-			else {
-				err(currentToken.getLine(), " invalid ID");
-			}
-		}
-		else {
+		}	
+		/*else {
 			err(currentToken.getLine(), " invalid type before ID");
-		}
+		}*/
 		currentToken = startToken;
+		tokensIndex = startIndex;
 		return false;
 	}
 	
 	public boolean ruleDeclVar() {
+		Token startToken = currentToken;
+		int startIndex = tokensIndex;
+		System.out.println("rule: declVar | starting token: " + startToken);
+		if(ruleTypeBase()) {
+			if(consumeToken("ID")) {
+			}
+			if(ruleArrayDecl()) {
+				
+			}
+			for(;;) {
+				if(consumeToken("COMMA")) {
+					if(consumeToken("ID")) {
+								
+					}
+					if(ruleArrayDecl()) {
+						
+					}
+				}
+				else {
+					break;
+				}
+			}
+			if(consumeToken("SEMICOLON")) {
+				return true;
+			}
+			/*else {
+				err(currentToken.getLine(), "missing ; or ,");
+			}*/
+		}
+		currentToken = startToken;
+		tokensIndex = startIndex;
+		return false;
+	}
+	
+	/*public boolean ruleDeclVar() {
 		Token startToken = currentToken;
 		System.out.println("rule: declVar | starting token: " + startToken);
 		if(ruleTypeBase()) {
@@ -450,10 +528,11 @@ public class SyntacticAnalyzer {
 		currentToken = startToken;
 		return false;
 	}
-	
+	*/
 	// 0 or more implementation
 	public boolean ruleDeclStruct() {
 		Token startToken = currentToken;
+		int startIndex = tokensIndex;
 		System.out.println("rule: declStruct | starting token: " + startToken);
 		if(consumeToken("STRUCT")) {
 			if(consumeToken("ID")) {
@@ -476,23 +555,151 @@ public class SyntacticAnalyzer {
 				}
 			}
 		}
-		else {
+		/*else {
 			err(currentToken.getLine(), "missing ID");
-		}
+		}*/
 		currentToken = startToken;
+		tokensIndex = startIndex;
 		return false;
 	}
 	
 	public boolean ruleFuncArg() {
+		Token startToken = currentToken;
+		int startIndex = tokensIndex;
+		System.out.println("rule: funcArg | starting token: " + startToken);
+		if(ruleTypeBase()) {
+			if(consumeToken("ID")) {
+				if(ruleArrayDecl()) {
+					return true;
+				}
+				return true;
+			}
+		}
+		currentToken = startToken;
+		tokensIndex = startIndex;
+		return false;
+	}
+	
+	public boolean ruleStm() {
+		Token startToken = currentToken;
+		int startIndex = tokensIndex;
+		System.out.println("rule: stm | starting token: " + startToken);
+		if(ruleStmCompound()) {
+			return true;
+		}
+		else if(consumeToken("IF")) {
+			if(consumeToken("LPAR")) {
+				if(ruleExpr()) {
+					if(consumeToken("RPAR")) {
+						if(ruleStm()) {
+							if(consumeToken("ELSE")) {
+								if(ruleStm()) {
+									return true;
+								}
+							}
+							return true;
+						}
+					}
+				}
+			}
+		}
+		else if(consumeToken("WHILE")) {
+			if(consumeToken("LPAR")) {
+				if(ruleExpr()) {
+					if(consumeToken("RPAR")) {
+						if(ruleStm()) {
+							return true;
+						}
+					}
+				}
+			}
+		}
+		else if(consumeToken("FOR")) {
+			if(consumeToken("LPAR")) {
+				if(ruleExpr()) {
+					
+				}
+				if(consumeToken("SEMICOLON")) {
+					
+				}
+				else {
+					err(currentToken.getLine(), "missing ;");
+				}
+				if(ruleExpr()) {
+
+				}
+				if(consumeToken("SEMICOLON")) {
+
+				}
+				else {
+					err(currentToken.getLine(), "missing ;");
+				}
+				if(ruleExpr()) {
+
+				}
+				if(consumeToken("RPAR")) {
+					if(ruleStm()) {
+						return true;
+					}
+				}
+			}
+		}
+		else if(consumeToken("BREAK")) {
+			if(consumeToken("BREAK")) {
+				if(consumeToken("SEMICOLON")) {
+					return true;
+				}
+			}
+		}
+		else if(consumeToken("RETURN")) {
+			if(consumeToken("RETURN")) {
+				if(ruleExpr()) {
+					
+				}
+				if(consumeToken("SEMICOLON")) {
+					return true;
+				}
+			}
+		}
+		else if(ruleExpr()) {
+			
+		}
+		else if(consumeToken("SEMICOLON")) {
+			return true;
+		}
+		currentToken = startToken;
+		tokensIndex = startIndex;
 		return false;
 	}
 	
 	public boolean ruleStmCompound() {
+		Token startToken = currentToken;
+		int startIndex = tokensIndex;
+		System.out.println("rule: stmCompound | starting token: " + startToken);
+		if(consumeToken("LACC")) {
+			for(;;) {
+				if(ruleDeclVar()) {
+					
+				}
+				else if(ruleStm()) {
+					
+				}
+				else {
+					break;
+				}
+			}
+			if(consumeToken("RACC")) {
+				return true;
+			}
+		}
+		currentToken = startToken;
+		tokensIndex = startIndex;
 		return false;
 	}
 	
 	public boolean ruleDeclFunc() {
 		Token startToken = currentToken;
+		int startIndex = tokensIndex;
 		System.out.println("rule: declFunc | starting token: " + startToken);
 		if(ruleTypeBase()) {
 			if(consumeToken("MUL")) {
@@ -504,7 +711,8 @@ public class SyntacticAnalyzer {
 		}
 		else {
 			currentToken = startToken;
-			return false;
+			tokensIndex = startIndex;
+			//return false; //////////////////// comentat sau nu?????
 		}
 		if(consumeToken("ID")) {
 			if(consumeToken("LPAR")) {
@@ -524,9 +732,6 @@ public class SyntacticAnalyzer {
 					if(ruleStmCompound()) {
 						return true;
 					}
-					else {
-						err(currentToken.getLine(), "missing function body");
-					}
 				}
 				else {
 					err(currentToken.getLine(), "missing )");
@@ -534,11 +739,13 @@ public class SyntacticAnalyzer {
 			}
 		}
 		currentToken = startToken;
+		tokensIndex = startIndex;
 		return false;
 	}
 	
 	public boolean exprPrimary() {
 		Token startToken = currentToken;
+		int startIndex = tokensIndex;
 		System.out.println("rule: exprPrimary | starting token: " + startToken);
 		if(consumeToken("ID")) {
 			if(consumeToken("LPAR")) {
@@ -570,11 +777,13 @@ public class SyntacticAnalyzer {
 			}
 		}
 		currentToken = startToken;
+		tokensIndex = startIndex;
 		return false;
 	}
 	
 	public boolean ruleUnit() {
 		Token startToken = currentToken;
+		int startIndex = tokensIndex;
 		System.out.println("rule: unit | starting token: " + startToken);
 		for(;;) {
 			if(ruleDeclStruct() || ruleDeclFunc() || ruleDeclVar()) {
@@ -588,6 +797,7 @@ public class SyntacticAnalyzer {
 			return true;
 		}
 		currentToken = startToken;
+		tokensIndex = startIndex;
 		return false;
 	}
 

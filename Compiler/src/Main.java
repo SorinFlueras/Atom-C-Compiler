@@ -8,7 +8,7 @@ public class Main {
 		lex.addToken("END", "END", -1);
 		System.out.println(lex.getTokens());
 		SyntacticAnalyzer syn = new SyntacticAnalyzer(lex.getTokens());
-		System.out.println(syn.ruleTypeBase());
+		System.out.println(syn.ruleUnit());
 	}
 
 }
